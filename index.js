@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -43,6 +43,20 @@ async function run() {
         app.get("/foods", async (req, res) => {
             const result = await foodCollection.find().toArray();
             console.log(result);
+            res.send(result);
+        })
+
+        app.get('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+
+            const options = {
+                // Include only the `title` and `imdb` fields in the returned document
+                // foodName, foodImage, foodQuantity, foodType, foodMakerName, foodMakerEmail, foodOrigin, foodPrice, foodDescription 
+                projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType:1, foodMakerName:1, foodMakerEmail:1, foodOrigin:1, foodPrice:1, foodDescription:1  },
+            };
+
+            const result = await foodCollection.findOne(query, options);
             res.send(result);
         })
 

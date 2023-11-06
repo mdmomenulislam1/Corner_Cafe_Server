@@ -1,2 +1,7 @@
 node_modules
 .env
+# git rm -r --cached node_modules
+# git rm -r --cached .env
+# git  add .
+# git commit -m "removed node modules and .env "
+# git push -u origin main  -f
