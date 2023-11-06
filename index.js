@@ -51,16 +51,36 @@ async function run() {
             const query = { _id: new ObjectId(id) }
 
             const options = {
-                // Include only the `title` and `imdb` fields in the returned document
-                // foodName, foodImage, foodQuantity, foodType, foodMakerName, foodMakerEmail, foodOrigin, foodPrice, foodDescription 
-                projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType:1, foodMakerName:1, foodMakerEmail:1, foodOrigin:1, foodPrice:1, foodDescription:1  },
+                projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType: 1, foodMakerName: 1, foodMakerEmail: 1, foodOrigin: 1, foodPrice: 1, foodDescription: 1 },
             };
 
             const result = await foodCollection.findOne(query, options);
             res.send(result);
         })
 
-
+        app.put("/foods/:id", async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+            const filter = {
+                _id: new ObjectId(id),
+            };
+            const options = { upsert: true };
+            const updatedData = {
+                $set: {
+                    foodName: data.foodName,
+                    foodImage: data.foodImage,
+                    foodQuantity: data.foodQuantity,
+                    foodType: data.foodType,
+                    foodMakerName: data.foodMakerName,
+                    foodMakerEmail: data.foodMakerEmail,
+                    foodOrigin: data.foodOrigin,
+                    foodPrice: data.foodPrice,
+                    foodDescription: data.foodDescription
+                },
+            };
+            const result = await foodCollection.updateOne(filter, updatedData, options);
+            res.send(result);
+        })
 
         const orderCollection = client.db('orderItem').collection('orders');
 
@@ -73,10 +93,17 @@ async function run() {
         });
 
 
-        app.get("/orderedFoods", async (req, res) =>{
+        app.get("/orderedFoods", async (req, res) => {
             const result = await orderCollection.find().toArray();
             console.log(result);
             res.send(result)
+        })
+
+        app.delete('/orderedFoods/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
         })
 
         // Send a ping to confirm a successful connection
