@@ -40,22 +40,22 @@ const client = new MongoClient(uri, {
 });
 
 //Middle wares
-const logger = (req, res, next) =>{
-    console.log('Log: Info',req.method, req.url);
+const logger = (req, res, next) => {
+    console.log('Log: Info', req.method, req.url);
     next();
 };
 
-const verifyToken = (req, res, next) =>{
+const verifyToken = (req, res, next) => {
     const token = req?.cookies?.token;
     // console.log('Token in Middleware.', token);
     if (!token) {
-        return res.status(401).send({message : 'unauthorized access'})
+        return res.status(401).send({ message: 'unauthorized access' })
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=>{
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).send({message : 'unauthorized access'})
+            return res.status(401).send({ message: 'unauthorized access' })
         }
-        req.user = decoded ;
+        req.user = decoded;
         next();
     })
     // next();
@@ -80,9 +80,9 @@ async function run() {
                 .send({ success: true });
         });
 
-        app.post('/logout', async(req,res) =>{
-            const user =req.body;
-            res.clearCookie('token', {maxAge:0}).send({ success: true });
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            res.clearCookie('token', { maxAge: 0 }).send({ success: true });
         })
 
 
@@ -92,34 +92,82 @@ async function run() {
 
         app.post("/foods", async (req, res) => {
             const food = req.body;
-            // console.log("food", food);
             const result = await foodCollection.insertOne(food);
-            // console.log(result);
             res.send(result);
         });
 
         app.get("/foods", async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
-
-            console.log('Pagination ',req.query);
+            console.log('Pagination ', req.query);
             const result = await foodCollection.find()
-            .skip(page*size)
-            .limit(size)
-            .toArray();
-            
-            // console.log(result);
+                .skip(page * size)
+                .limit(size)
+                .toArray();
             res.send(result);
+        })
+
+        app.get("/foodsOrder", async (req, res) => {
+            // const page = parseInt(req.query.page);
+            // const size = parseInt(req.query.size);
+            console.log('Pagination ', req.query);
+            const result = await orderCollection.find()
+                // .skip(page * size)
+                // .limit(size)
+                .toArray();
+            res.send(result);
+        })
+
+        app.get("/AddedFoods", async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+            console.log('Pagination ', req.query);
+            const result = await foodCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray();
+            res.send(result);
+        })
+
+        app.get('/foodsCount', async (req, res) => {
+            const count = await foodCollection.estimatedDocumentCount();
+            res.send({ count });
+        });
+
+        app.get('/AddedFoodsCount', async (req, res) => {
+            const count = await foodCollection.estimatedDocumentCount();
+            res.send({ count });
+        });
+
+        app.get("/orderFoods", async (req, res) => {
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+            console.log('Pagination ', req.query);
+            const result = await orderCollection.find()
+                .skip(page * size)
+                .limit(size)
+                .toArray();
+            res.send(result);
+        })
+
+        app.get('/orderCount', async (req, res) => {
+            const count = await orderCollection.estimatedDocumentCount();
+            res.send({ count });
+        });
+
+        app.get('/orderedHotFoods', async (req, res) => {
+            const sortedOrders = await orderCollection.find().sort({ orderedFoodQuantity: -1 }).toArray();
+            console.log('Orders sorted by quantity (descending):');
+            console.log(sortedOrders);
+            res.send(sortedOrders);
         })
 
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
-
             const options = {
                 projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType: 1, foodMakerName: 1, foodMakerEmail: 1, foodOrigin: 1, foodPrice: 1, foodDescription: 1 },
             };
-
             const result = await foodCollection.findOne(query, options);
             res.send(result);
         })
@@ -152,36 +200,31 @@ async function run() {
 
         app.post("/orderedfoods", async (req, res) => {
             const order = req.body;
-            // console.log("order", order);
             const result = await orderCollection.insertOne(order);
-            // console.log(result);
             res.send(result);
         });
 
 
-        app.get("/orderedfoods", logger, verifyToken, async (req, res) => {
+        app.get("/orderedFoods", logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
-            console.log('CCCCCCCC',req.cookies);
+            console.log('Cookies', req.cookies);
             // if (req.user.email !== req.query.email) {
             //     return res.status(403).send({message: 'forbidden access'})
             // }
-            let query = {};
-            if (req.query?.email) {
-                
-            }
+            // let query = {};
+            // if (req.query?.email) {
+            // }
             const result = await orderCollection.find().toArray();
-            // console.log(result);
             res.send(result)
         })
 
-        app.delete('/orderedfoods/:id', async (req, res) => {
+        app.delete('/foodsOrder/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await orderCollection.deleteOne(query);
             res.send(result);
         })
 
-        // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
