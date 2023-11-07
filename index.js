@@ -172,6 +172,16 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/orderFoods/:id', async (req, res) => {
+             const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const options = {
+                projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType: 1, foodMakerName: 1, foodMakerEmail: 1, foodOrigin: 1, foodPrice: 1, foodDescription: 1 },
+            };
+            const result = await foodCollection.findOne(query, options);
+            res.send(result);
+        })
+
         app.put("/foods/:id", async (req, res) => {
             const id = req.params.id;
             const data = req.body;
