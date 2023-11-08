@@ -9,7 +9,8 @@ const port = process.env.PORT || 5000;
 
 app.use(cors({
     origin: [
-        'http://localhost:5173'
+        'http://localhost:5173',
+        'https://elaborate-pasca-f49ba8.netlify.app'
     ],
     credentials: true
 }));
@@ -196,12 +197,12 @@ async function run() {
         app.get("/orderedFoods", logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
             console.log('Cookies', req.cookies);
-            if (req.user.email !== req.query.email) {
-                return res.status(403).send({message: 'forbidden access'})
-            }
-            let query = {};
-            if (req.query?.email) {
-            }
+            // if (req.user.email !== req.query.email) {
+            //     return res.status(403).send({message: 'forbidden access'})
+            // }
+            // let query = {};
+            // if (req.query?.email) {
+            // }
             const result = await orderCollection.find().toArray();
             res.send(result)
         })
