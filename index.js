@@ -51,9 +51,7 @@ const verifyToken = (req, res, next) => {
 
 async function run() {
     try {
-        await client.connect();
-
-
+       
         app.post('/jwt', logger, async (req, res) => {
             const user = req.body;
             console.log(user);
@@ -65,6 +63,13 @@ async function run() {
             })
                 .send({ success: true });
         });
+
+        // res.cookie('token', token, {
+        //   httpOnly: true,
+        //   secure: process.env.NODE_ENV === 'production',
+        //   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        // })
+        // .send({ success: true })
 
         app.post('/logout', async (req, res) => {
             const user = req.body;
@@ -97,49 +102,49 @@ async function run() {
             res.send(result);
         })
 
-        app.get("/AddedFoods", async (req, res) => {
-            const page = parseInt(req.query.page);
-            const size = parseInt(req.query.size);
-            console.log('Pagination ', req.query);
-            const result = await foodCollection.find()
-                .skip(page * size)
-                .limit(size)
-                .toArray();
-            res.send(result);
-        })
+        // app.get("/AddedFoods", async (req, res) => {
+        //     const page = parseInt(req.query.page);
+        //     const size = parseInt(req.query.size);
+        //     console.log('Pagination ', req.query);
+        //     const result = await foodCollection.find()
+        //         .skip(page * size)
+        //         .limit(size)
+        //         .toArray();
+        //     res.send(result);
+        // })
 
         app.get('/foodsCount', async (req, res) => {
             const count = await foodCollection.estimatedDocumentCount();
             res.send({ count });
         });
 
-        app.get('/AddedFoodsCount', async (req, res) => {
-            const count = await foodCollection.estimatedDocumentCount();
-            res.send({ count });
-        });
+        // app.get('/AddedFoodsCount', async (req, res) => {
+        //     const count = await foodCollection.estimatedDocumentCount();
+        //     res.send({ count });
+        // });
 
-        app.get("/orderFoods", async (req, res) => {
-            const page = parseInt(req.query.page);
-            const size = parseInt(req.query.size);
-            console.log('Pagination ', req.query);
-            const result = await orderCollection.find()
-                .skip(page * size)
-                .limit(size)
-                .toArray();
-            res.send(result);
-        })
+        // app.get("/orderFoods", async (req, res) => {
+        //     const page = parseInt(req.query.page);
+        //     const size = parseInt(req.query.size);
+        //     console.log('Pagination ', req.query);
+        //     const result = await orderCollection.find()
+        //         .skip(page * size)
+        //         .limit(size)
+        //         .toArray();
+        //     res.send(result);
+        // })
 
-        app.get('/orderCount', async (req, res) => {
-            const count = await orderCollection.estimatedDocumentCount();
-            res.send({ count });
-        });
+        // app.get('/orderCount', async (req, res) => {
+        //     const count = await orderCollection.estimatedDocumentCount();
+        //     res.send({ count });
+        // });
 
-        app.get('/orderedHotFoods', async (req, res) => {
-            const sortedOrders = await orderCollection.find().sort({ orderedFoodQuantity: -1 }).toArray();
-            console.log('Orders sorted by quantity (descending):');
-            console.log(sortedOrders);
-            res.send(sortedOrders);
-        })
+        // app.get('/orderedHotFoods', async (req, res) => {
+        //     const sortedOrders = await orderCollection.find().sort({ orderedFoodQuantity: -1 }).toArray();
+        //     console.log('Orders sorted by quantity (descending):');
+        //     console.log(sortedOrders);
+        //     res.send(sortedOrders);
+        // })
 
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
