@@ -10,7 +10,11 @@ const port = process.env.PORT || 5000;
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://elaborate-pasca-f49ba8.netlify.app'
+        'https://elaborate-pasca-f49ba8.netlify.app',
+        'https://keen-granita-ebf734.netlify.app',
+        'https://assignment-11-810e3.web.app',
+        'https://assignment-11-810e3.firebaseapp.com',
+        'https://nimble-friction.surge.sh'
     ],
     credentials: true
 }));
@@ -35,7 +39,7 @@ const logger = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
     const token = req?.cookies?.token;
-    
+
     if (!token) {
         return res.status(401).send({ message: 'unauthorized access' })
     }
@@ -51,25 +55,17 @@ const verifyToken = (req, res, next) => {
 
 async function run() {
     try {
-       
+
         app.post('/jwt', logger, async (req, res) => {
             const user = req.body;
-            console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: true,
-                sameSite: 'none'
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             })
                 .send({ success: true });
         });
-
-        // res.cookie('token', token, {
-        //   httpOnly: true,
-        //   secure: process.env.NODE_ENV === 'production',
-        //   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        // })
-        // .send({ success: true })
 
         app.post('/logout', async (req, res) => {
             const user = req.body;
@@ -87,8 +83,17 @@ async function run() {
         app.get("/foods", async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
-            console.log('Pagination ', req.query);
-            const result = await foodCollection.find()
+            const filter = req.query;
+            const query = {
+                // foodName: {
+                //     $regex: new RegExp(req.query.search, 'i').toString()
+                // }
+            };
+
+            const options = {
+                foodPrice: filter.sort === 'asc' ? 1 : -1
+            };
+            const result = await foodCollection.find(query, options)
                 .skip(page * size)
                 .limit(size)
                 .toArray();
@@ -102,49 +107,10 @@ async function run() {
             res.send(result);
         })
 
-        // app.get("/AddedFoods", async (req, res) => {
-        //     const page = parseInt(req.query.page);
-        //     const size = parseInt(req.query.size);
-        //     console.log('Pagination ', req.query);
-        //     const result = await foodCollection.find()
-        //         .skip(page * size)
-        //         .limit(size)
-        //         .toArray();
-        //     res.send(result);
-        // })
-
         app.get('/foodsCount', async (req, res) => {
             const count = await foodCollection.estimatedDocumentCount();
             res.send({ count });
         });
-
-        // app.get('/AddedFoodsCount', async (req, res) => {
-        //     const count = await foodCollection.estimatedDocumentCount();
-        //     res.send({ count });
-        // });
-
-        // app.get("/orderFoods", async (req, res) => {
-        //     const page = parseInt(req.query.page);
-        //     const size = parseInt(req.query.size);
-        //     console.log('Pagination ', req.query);
-        //     const result = await orderCollection.find()
-        //         .skip(page * size)
-        //         .limit(size)
-        //         .toArray();
-        //     res.send(result);
-        // })
-
-        // app.get('/orderCount', async (req, res) => {
-        //     const count = await orderCollection.estimatedDocumentCount();
-        //     res.send({ count });
-        // });
-
-        // app.get('/orderedHotFoods', async (req, res) => {
-        //     const sortedOrders = await orderCollection.find().sort({ orderedFoodQuantity: -1 }).toArray();
-        //     console.log('Orders sorted by quantity (descending):');
-        //     console.log(sortedOrders);
-        //     res.send(sortedOrders);
-        // })
 
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
@@ -157,7 +123,7 @@ async function run() {
         })
 
         app.get('/orderFoods/:id', async (req, res) => {
-             const id = req.params.id;
+            const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const options = {
                 projection: { foodName: 1, foodImage: 1, foodQuantity: 1, foodType: 1, foodMakerName: 1, foodMakerEmail: 1, foodOrigin: 1, foodPrice: 1, foodDescription: 1 },
@@ -200,14 +166,13 @@ async function run() {
 
 
         app.get("/orderedFoods", logger, verifyToken, async (req, res) => {
-            console.log(req.query.email);
-            console.log('Cookies', req.cookies);
-            // if (req.user.email !== req.query.email) {
-            //     return res.status(403).send({message: 'forbidden access'})
-            // }
-            // let query = {};
-            // if (req.query?.email) {
-            // }
+            if (req.user.email !== req.query.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
             const result = await orderCollection.find().toArray();
             res.send(result)
         })
@@ -222,8 +187,7 @@ async function run() {
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
-        // Ensures that the client will close when you finish/error
-        // await client.close();
+
     }
 }
 run().catch(console.dir);
