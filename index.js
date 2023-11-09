@@ -14,7 +14,9 @@ app.use(cors({
         'https://keen-granita-ebf734.netlify.app',
         'https://assignment-11-810e3.web.app',
         'https://assignment-11-810e3.firebaseapp.com',
-        'https://nimble-friction.surge.sh'
+        'https://nimble-friction.surge.sh',
+        'https://bejewelled-lebkuchen-faca1b.netlify.app',
+        'https://calm-bienenstitch-2c1140.netlify.app'
     ],
     credentials: true
 }));
@@ -83,17 +85,7 @@ async function run() {
         app.get("/foods", async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
-            const filter = req.query;
-            const query = {
-                // foodName: {
-                //     $regex: new RegExp(req.query.search, 'i').toString()
-                // }
-            };
-
-            const options = {
-                foodPrice: filter.sort === 'asc' ? 1 : -1
-            };
-            const result = await foodCollection.find(query, options)
+            const result = await foodCollection.find()
                 .skip(page * size)
                 .limit(size)
                 .toArray();
