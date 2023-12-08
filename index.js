@@ -10,13 +10,9 @@ const port = process.env.PORT || 5000;
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://elaborate-pasca-f49ba8.netlify.app',
-        'https://keen-granita-ebf734.netlify.app',
+        'https://corner-cafe.netlify.app',
         'https://assignment-11-810e3.web.app',
-        'https://assignment-11-810e3.firebaseapp.com',
-        'https://nimble-friction.surge.sh',
-        'https://bejewelled-lebkuchen-faca1b.netlify.app',
-        'https://calm-bienenstitch-2c1140.netlify.app'
+        'https://assignment-11-810e3.firebaseapp.com'
     ],
     credentials: true
 }));
