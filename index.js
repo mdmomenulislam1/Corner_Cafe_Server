@@ -55,14 +55,14 @@ async function run() {
     try {
 
         app.post('/jwt', logger, async (req, res) => {
+            console.log('Request Body:', req.body);
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            })
-                .send({ success: true });
+            }).send({ success: true });
         });
 
         app.post('/logout', async (req, res) => {
@@ -86,12 +86,75 @@ async function run() {
                 .limit(size)
                 .toArray();
             res.send(result);
-        })
+        });
+
+
+
+        // app.patch('/property/:id', async (req, res) => {
+        //     const data = req.body;
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) }
+        //     const updatedDoc = {
+        //         $set: {
+        //             property_title: data.property_title,
+        //             property_image: data.property_image,
+        //             property_location: data.property_location,
+        //             agent_name: data.agent_name,
+        //             agent_email: data.agent_email,
+        //             agent_image: data.agent_image,
+        //             price_range: data.price_range,
+        //             verification_status: data.verification_status,
+        //             property_description: data.property_description
+        //         }
+        //     }
+
+        //     const result = await propertyCollection.updateOne(filter, updatedDoc)
+        //     res.send(result);
+        // });
+
+
+        app.patch('/foods/:id', async (req, res) => {
+                const data = req.body;
+                const id = req.params.id;
+                const filter = { _id: new ObjectId(id) };
+                const updatedFields = {
+                    $set: {
+                    foodName: data.foodName,
+                    foodImage: data.foodImage,
+                    foodType: data.foodType,
+                    foodQuantity: data.foodQuantity,
+                    foodPrice: data.foodPrice,
+                    foodMakerName: data.foodMakerName,
+                    foodMakerEmail: data.foodMakerEmail,
+                    foodOrigin: data.foodOrigin,
+                    foodDescription: data.foodDescription,
+                }
+            };
+        
+                const result = await foodCollection.updateOne(filter, updatedFields);
+        
+                res.send(result);
+
+            
+        });
+        
+
+
 
         app.get("/foodsOrder", async (req, res) => {
             console.log('Pagination ', req.query);
             const result = await orderCollection.find()
                 .toArray();
+            res.send(result);
+        });
+
+        app.get('/foodsOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const options = {
+                projection: { orderedFoodName: 1 },
+            };
+            const result = await orderCollection.findOne(query, options);
             res.send(result);
         })
 
