@@ -89,30 +89,6 @@ async function run() {
         });
 
 
-
-        // app.patch('/property/:id', async (req, res) => {
-        //     const data = req.body;
-        //     const id = req.params.id;
-        //     const filter = { _id: new ObjectId(id) }
-        //     const updatedDoc = {
-        //         $set: {
-        //             property_title: data.property_title,
-        //             property_image: data.property_image,
-        //             property_location: data.property_location,
-        //             agent_name: data.agent_name,
-        //             agent_email: data.agent_email,
-        //             agent_image: data.agent_image,
-        //             price_range: data.price_range,
-        //             verification_status: data.verification_status,
-        //             property_description: data.property_description
-        //         }
-        //     }
-
-        //     const result = await propertyCollection.updateOne(filter, updatedDoc)
-        //     res.send(result);
-        // });
-
-
         app.patch('/foods/:id', async (req, res) => {
                 const data = req.body;
                 const id = req.params.id;
@@ -132,10 +108,7 @@ async function run() {
             };
         
                 const result = await foodCollection.updateOne(filter, updatedFields);
-        
                 res.send(result);
-
-            
         });
         
 
